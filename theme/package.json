@@ -1,0 +1,24 @@
+{
+  "name": "slidev-theme-nomad",
+  "version": "0.0.1",
+  "description": "Nomad theme for Slidev",
+  "keywords": [
+    "slidev-theme",
+    "slidev"
+  ],
+  "engines": {
+    "node": ">=14.0.0",
+    "slidev": ">=v0.47.0"
+  },
+  "slidev": {
+    "colorSchema": "light",
+    "highlighter": "shiki",
+    "defaults": {
+      "fonts": {
+        "sans": "Titillium Web",
+        "serif": "Titillium Web",
+        "weights": "300,400,600,700"
+      }
+    }
+  }
+}

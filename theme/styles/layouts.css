@@ -1,0 +1,75 @@
+:root {
+  --slidev-theme-primary: #192E86;
+}
+
+.slidev-layout {
+  background: #ffffff;
+  color: #1a1a1a;
+  font-family: 'Titillium Web', system-ui, sans-serif;
+
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--slidev-theme-primary);
+    font-family: 'Titillium Web', system-ui, sans-serif;
+    font-weight: 600;
+  }
+
+  h1 { @apply text-4xl mb-4 -ml-[0.05em]; }
+  h2 { @apply text-3xl mb-3; }
+  h3 { @apply text-2xl mb-2; }
+  h4 { @apply text-xl; }
+  h5 { @apply text-base; }
+  h6 { @apply text-sm pt-1 uppercase tracking-widest font-500 -ml-[0.05em]; }
+
+  h6:not(.opacity-100) {
+    @apply opacity-40;
+  }
+
+  a {
+    color: var(--slidev-theme-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+.slidev-layout.cover,
+.slidev-layout.intro {
+  @apply h-full grid;
+
+  h1 {
+    @apply text-6xl leading-20;
+  }
+}
+
+.slidev-layout.cover.has-bg-image {
+  h1, h2, h3, h4, h5, h6, a {
+    color: inherit;
+  }
+}
+
+.slidev-layout.section {
+  @apply h-full grid grid-cols-2;
+  padding: 0 !important;
+}
+
+.slidev-layout.section .section-spacer {
+  background: #ffffff;
+}
+
+.slidev-layout.section .section-panel {
+  @apply flex items-center justify-center;
+  background: var(--slidev-theme-primary);
+  padding: 4rem;
+}
+
+.slidev-layout.section .section-panel h1 {
+  @apply text-5xl font-700 leading-tight text-center;
+  color: #ffffff;
+}
+
+.slidev-layout.statement {
+  @apply text-center grid h-full;
+
+  h1 {
+    @apply text-6xl font-700;
+  }
+}
