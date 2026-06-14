@@ -30,6 +30,19 @@ hideInToc: true
 <Toc text-2xl minDepth="1" maxDepth="1" />
 
 ---
+layout: two-cols-header
+level: 2
+---
+
+# View slides on your laptop
+
+::left:: 
+
+Please open the live version of these slides on your laptop by following this URL. This way you can follow the slides in your own pace + copy/paste commands.
+
+::right::
+
+---
 layout: section
 ---
 
@@ -87,7 +100,7 @@ Kubernetes runs the **same containers**, but as a self-managing system across a 
 
 - You declare the **desired state**; Kubernetes keeps reality matching it
 - One Helm command deploys the **whole NOMAD stack**
-- Same workflow on a **laptop** (minikube) or **many cloud nodes**
+- Same workflow on a **laptop** or **many cloud nodes**
 
 Where Compose strained, Kubernetes helps:
 
@@ -132,7 +145,7 @@ level: 2
 | **Overhead** | Minimal | Control plane + per-node agents |
 | **Best for** | Dev, single server | Production, HA, many concurrent users |
 
-➡️ A common path: **start on Docker Compose, grow into Kubernetes** — the same container image works on both.
+A common path: **start on Docker Compose, grow into Kubernetes** — the same container image works on both.
 
 <style>
 table th, table td { padding: 7px 10px !important; line-height: 1.25 !important; }
@@ -169,7 +182,7 @@ level: 2
 ::right::
 
 <div class="h-full flex flex-col justify-center ml-8">
-  <div class="text-[0.82rem] px-3 py-2 rounded border border-gray-400/40">
+  <div class="text-[0.82rem] px-3 py-2 rounded border border-gray-400/40 mb-20">
 
   **What's in a name?** *Kubernetes* is Greek (κυβερνήτης) for **helmsman / pilot** — the same root as *cybernetics* and *governor*. Often shortened to **K8s** (K + 8 letters + s). Its **seven-spoked ship's-wheel** logo nods to the team's codename, *"Project Seven of Nine"* — a Star Trek Borg reference.
   </div>
@@ -223,7 +236,7 @@ A **cluster** = a control plane that gives orders + worker nodes that run your c
 </div>
 
 <!--
-On a managed cloud cluster you never see the control plane — the provider runs it for you. On minikube the control plane and the single worker node both live inside one VM/container on your laptop.
+On a managed cloud cluster you never see the control plane — the provider runs it for you. On k3s the control plane and the single worker node both live inside on your laptop.
 -->
 
 ---
@@ -255,10 +268,10 @@ That's why FAIRmat ships a **Helm chart** instead of a pile of raw YAML: one com
 ::right::
 
 <div class="h-full flex flex-col items-center justify-center ml-8 gap-8">
-  <img src="https://raw.githubusercontent.com/cncf/artwork/master/projects/helm/icon/color/helm-icon-color.svg" class="max-h-[130px]" />
+  <img src="https://raw.githubusercontent.com/cncf/artwork/master/projects/helm/icon/color/helm-icon-color.svg" class="max-h-[220px]" />
 
 ```bash
-# install the whole NOMAD stack
+# Install the whole NOMAD stack
 helm install nomad-oasis nomad/default \
   -f my-values.yaml
 ```
@@ -268,101 +281,6 @@ helm install nomad-oasis nomad/default \
 <!--
 Analogy that lands with scientists: a Helm chart is to Kubernetes what a conda package is to Python — someone has done the hard packaging work, you just pick a version and a few settings.
 -->
-
----
-layout: section
----
-
-# Getting a cluster
-
----
-layout: two-cols-header
-level: 2
----
-
-# A Kubernetes server in the cloud
-
-::left:: 
-
-You rarely build a cluster by hand. Cloud providers run a **managed Kubernetes**: they operate the control plane, you just add worker nodes.
-
-Using **Google Kubernetes Engine (GKE) Autopilot** as the example:
-
-- Google runs *and* bills the control plane for you
-- **Autopilot** even manages the nodes — you just deploy
-- A cluster is ready in a few minutes
-
-The same idea exists on **AWS (EKS)**, **Azure (AKS)**, DigitalOcean, etc.
-
-::right::
-
-<div class="h-full flex flex-col items-center justify-center ml-8 gap-6">
-  <img src="https://www.vectorlogo.zone/logos/google_cloud/google_cloud-icon.svg" class="max-h-[110px]" />
-
-```bash
-# one command → a production-grade cluster
-gcloud container clusters create-auto \
-  nomad-oasis --region=europe-west1
-
-# point kubectl at it
-gcloud container clusters \
-  get-credentials nomad-oasis \
-  --region europe-west1
-```
-
-</div>
-
-<!--
-The mental shift: in the cloud you don't think about "servers" anymore, you think about a cluster you submit work to. We'll actually do this live in part 2.
--->
-
----
-layout: two-cols-header
-level: 2
----
-
-# Local Kubernetes with minikube
-
-::left:: 
-
-You don't need the cloud to learn Kubernetes — **minikube** runs a full single-node cluster on your laptop.
-
-- Same `kubectl` / `helm` workflow as the cloud
-- Perfect for development and for this workshop
-- Needs a driver (Docker is the easiest)
-
-Install: **https://minikube.sigs.k8s.io/docs/start/**
-
-::right::
-
-<div class="h-full flex flex-col items-center justify-center ml-8 gap-6">
-  <img src="https://raw.githubusercontent.com/kubernetes/minikube/master/images/logo/logo.png" class="max-h-[90px] object-contain" />
-
-```bash
-# start a local cluster
-minikube start --cpus=4 --memory=8192
-
-# enable an ingress controller
-minikube addons enable ingress
-
-# a web dashboard for the cluster
-minikube dashboard
-
-# clean up when done
-minikube stop      # or: minikube delete
-```
-
-</div>
-
-<!--
-minikube is the "Docker Desktop" of Kubernetes: one binary, one command, a real cluster. Everything we show locally transfers 1:1 to the cloud cluster.
--->
-
----
-layout: section
----
-
-# Deploying NOMAD
 
 ---
 layout: two-cols-header
@@ -377,7 +295,7 @@ Repo: **`FAIRmat-NFDI/nomad-helm-charts`**
 
 - One chart: **`default`** — the full Oasis stack
 - Bundles the dependencies as **subcharts** (app, worker, NORTH, MongoDB, Elasticsearch, RabbitMQ, …)
-- Ready-made **`custom-values/`** for each target: `minikube.yaml`, `kind.yaml`, `aws.yaml`
+- Ready-made **`custom-values/`** for each target: `k3s.yaml`, `minikube.yaml`, `kind.yaml`, `aws.yaml`, `gke.yaml`
 - **`helpers/`** scripts that bootstrap a local cluster for you
 
 ::right::
@@ -413,182 +331,167 @@ Two ways to consume it: add the published Helm repo and `helm install nomad/defa
 -->
 
 ---
-layout: two-cols-header
-level: 2
----
-
-# From distribution to deployment
-
-::left:: 
-
-Your **distribution** defines *what* NOMAD you run; the **Helm chart** defines *how* it runs on Kubernetes.
-
-1. Start from **`nomad-distro-template`** → *Use this template*
-2. Add your plugins in `pyproject.toml`
-3. CI builds custom **app / worker / jupyter** images
-4. Point the Helm chart at those images via **values**
-
-The **same custom image** powers both your Compose and your Kubernetes deployments.
-
-::right::
-
-<div class="h-full flex flex-col justify-center ml-8">
-
-```yaml
-# my-values.yaml
-nomad:
-  image:
-    repository: ghcr.io/my-lab/my-nomad-oasis
-    tag: "1.4.2"
-  config:
-    services:
-      api_host: nomad.my-institute.de
-      api_base_path: /nomad-oasis
-```
-
-</div>
-
-<!--
-This is the key conceptual link between last session's "distribution" idea and today's deployment: the distribution produces an image, the chart consumes it. Plugins, schemas and branding all live in the image; scaling and infrastructure live in the values.
--->
-
----
-level: 2
----
-
-# Install NOMAD locally (minikube)
-
-```bash
-# 1. Install minikube  →  https://minikube.sigs.k8s.io/docs/start/
-
-# 2. Get the NOMAD helm charts
-git clone https://github.com/FAIRmat-NFDI/nomad-helm-charts
-cd nomad-helm-charts
-
-# 3. One-shot bootstrap: starts minikube, enables ingress, installs the chart
-./helpers/minikube-setup.sh
-
-# 4. Map the hostname so your browser can reach the cluster
-echo "$(minikube ip) nomad-oasis.local" | sudo tee -a /etc/hosts
-
-# 5. Open a tunnel (keep this terminal running)
-minikube tunnel
-```
-
-Then open **http://nomad-oasis.local/nomad-oasis/gui/** — the script prints the exact URL. 🎉
-
-<!--
-The helper script encapsulates all the fiddly bits. If anyone wants the manual path: `helm dependency update ./charts/default` then `helm install nomad-oasis ./charts/default -f ./charts/default/custom-values/minikube.yaml --timeout 15m`. We'll run the script live next.
--->
-
----
-layout: statement
-hideInToc: true
----
-
-# 🔴 Live demo 1
-## minikube + NOMAD Oasis, from zero to running
-
-<!--
-Live: minikube start (or the helper), watch pods come up, open the GUI in the browser. If pods are slow, that's a perfect segue into the next section on kubectl.
--->
-
----
 layout: section
 ---
 
-# Operating a live cluster
+# Kubernetes locally with k3s
 
 ---
 layout: two-cols-header
+level: 2
+---
+
+# `k3s`
+
+::left::
+
+**k3s** runs a Kubernetes cluster on your laptop:
+
+- Same `kubectl` / `helm` workflow as the cloud
+- Perfect for development and for this workshop
+- There are also other similar lightweight kubernetes implementations for local usage (minikube, kind, k3d)
+
+Requirements if you wish to do this on your laptop:
+1. Linux laptop with `sudo` access
+2. Reasonably powerful laptop with storage to download all the images.
+
+::right::
+
+Let's install everything using helper scripts in `nomad-helm-charts`:
+
+```sh
+git clone https://github.com/FAIRmat-NFDI/nomad-helm-charts.git
+cd nomad-helm-charts
+
+# The latest version is found on the `develop` branch
+git checkout develop
+
+# Will ask for sudo password:
+# - Will install k3s+helm
+# - Creates data folders in /app
+# - Adds DNS entry to route traffic
+./helpers/k3s-setup.sh
+```
+<div class="h-full flex flex-col items-center justify-center ml-8 gap-6">
+  <img src="https://raw.githubusercontent.com/kubernetes/minikube/master/images/logo/logo.png" class="max-h-[90px] object-contain" />
+</div>
+
+<!--
+k3s is the "Docker Desktop" of Kubernetes: one binary, one command, a real cluster. Everything we show locally transfers 1:1 to the cloud cluster.
+-->
+
+---
 level: 2
 ---
 
 # Essential kubectl
 
-::left:: 
-
 `kubectl` is your window into the cluster. Add `-n nomad-oasis` to scope to the namespace.
+
+<div class="flex gap-10 text-left">
+
+<div style="width: 500px; flex-shrink: 0">
 
 **Inspect & observe**
 
 ```bash
-kubectl get pods -n nomad-oasis    # is it up?
-kubectl get pods -A                # all namespaces
-kubectl get nodes -o wide          # the machines
-kubectl get svc,deploy             # services / deployments
-kubectl describe pod <pod>         # status + events
-kubectl get events \
-  --sort-by=.lastTimestamp         # what just happened
+kubectl get pods -n nomad-oasis    # List all pods in a namespace 
+kubectl get pods -A                # All namespaces
+kubectl get nodes -o wide          # The machines
+kubectl get svc,deploy             # Services / deployments
+kubectl describe pod <pod>         # Status + events
+kubectl get events --sort-by=.lastTimestamp  # What just happened
 kubectl top pods                   # CPU / memory usage
 ```
-
-::right::
-
-<div class="ml-8">
 
 **Debug & access**
 
 ```bash
-kubectl logs -f <pod>              # stream logs
-kubectl logs <pod> --previous      # logs of a crash
-kubectl exec -it <pod> -- /bin/bash  # shell in
-kubectl port-forward \
-  svc/<svc> 8000:80                # reach it locally
-kubectl rollout status \
-  deploy/<name>                    # update progress
-kubectl delete pod <pod>           # force a restart
+kubectl logs -f <pod>                  # Stream logs
+kubectl logs <pod> --previous          # Logs of a crash
+kubectl exec -it <pod> -- /bin/bash    # Shell in
+kubectl delete pod <pod>               # Force a restart
+kubectl port-forward svc/<svc> 8000:80 # Reach it locally
 ```
 
 </div>
 
+<div class="text-[0.8rem] leading-relaxed">
+
+**Terms you'll meet along the way**
+
+- **Pod** — one+ containers; the smallest deployable unit
+- **Node** — a worker machine running your pods
+- **Namespace** — isolated group of resources (e.g. `nomad-oasis`)
+- **Deployment** — keeps N pod replicas running; rolling updates
+- **Service** — stable address load-balancing a set of pods
+- **ConfigMap / Secret** — config & credentials injected into pods
+- **Context** — which cluster + namespace `kubectl` points at
+
+</div>
+
+</div>
+
 <!--
-These ~12 commands cover 90% of day-to-day operations. The two most-used in an incident: `kubectl get pods` to see what's unhealthy, then `kubectl logs` / `kubectl describe` on the offender.
+These ~11 commands cover 90% of day-to-day operations. The two most-used in an incident: `kubectl get pods` to see what's unhealthy, then `kubectl logs` / `kubectl describe` on the offender.
+
+Things to try live:
+
+k3s kubectl get nodes -o wide
+k3s kubectl get pods -n nomad-oasis
 -->
 
 ---
-layout: two-cols-header
 level: 2
 ---
 
 # Essential Helm
 
-::left:: 
-
 Helm manages the **lifecycle** of the whole release, not individual objects.
 
-**Deploy & update**
+<div class="flex gap-8 text-left -mt-6">
 
-```bash
-helm repo add nomad \
-  https://fairmat-nfdi.github.io/nomad-helm-charts
-helm repo update
-
-# install or upgrade (idempotent)
-helm upgrade --install nomad-oasis \
-  nomad/default -f my-values.yaml
-
-# something broke? go back one revision
-helm rollback nomad-oasis 1
-```
-
-::right::
-
-<div class="ml-8">
+<div class="flex-1 min-w-0">
 
 **Inspect**
 
 ```bash
-helm list                    # releases here
-helm status nomad-oasis      # what's deployed
-helm get values nomad-oasis  # effective config
-helm history nomad-oasis     # revisions
-helm uninstall nomad-oasis   # tear it down
+helm list                    # Releases here
+helm status nomad-oasis      # What's deployed
+helm get values nomad-oasis  # Effective config
+helm history nomad-oasis     # Revisions
+helm uninstall nomad-oasis   # Tear it down
+```
+
+**Deploy & update**
+
+```bash
+helm repo add nomad https://fairmat-nfdi.github.io/ \
+  nomad-helm-charts # Add a new chart
+helm repo update  # Fetch the latest chart versions from the repos
+helm upgrade --install nomad-oasis nomad/default \
+  -f my-values.yaml   # Install or upgrade (idempotent)
+helm rollback nomad-oasis 1 # Something broke? Go back one revision
 ```
 
 </div>
 
-<div v-click class="col-span-2 mt-4 text-[0.95rem]">
+<div class="text-[0.8rem] leading-relaxed" style="width: 300px; flex-shrink: 0">
+
+**Terms you'll meet along the way**
+
+- **Chart** — a packaged, templated app (like `apt` / `conda`)
+- **Repository** — where charts are published & fetched
+- **Values** — the chart's configurable knobs (`my-values.yaml`)
+- **Release** — one installed instance of a chart (`nomad-oasis`)
+- **Revision** — a numbered snapshot; each upgrade bumps it
+- **Template** — chart files rendered into plain manifests
+
+</div>
+
+</div>
+
+<div v-click class="mt-4 text-[0.95rem]">
 
 To change anything — image tag, replica count, resources — **edit `my-values.yaml` and re-run `helm upgrade`**. That's the whole update story.
 
@@ -596,6 +499,91 @@ To change anything — image tag, replica count, resources — **edit `my-values
 
 <!--
 Contrast with Compose: there's no "edit-and-restart-by-hand". You declare the new desired state in values, Helm computes the diff, Kubernetes rolls it out with no downtime, and you can roll back instantly.
+
+Things to try live:
+
+helm list
+helm status nomad-oasis
+k3s kubectl get pods -n nomad-oasis
+-->
+
+---
+layout: two-cols-header
+level: 2
+---
+
+# Closing k3s
+
+If you installed k3s, remember to either **uninstall** it afterwards, or **disable** the service. Otherwise it will restart every time you reboot:
+
+```
+# Uninstall k3s
+sudo /usr/local/bin/k3s-uninstall.sh
+
+# Remove resources and stop k3s from launching
+sudo /usr/local/bin/k3s-killall.sh
+sudo systemctl disable k3s
+```
+
+---
+layout: two-cols-header
+level: 2
+---
+
+# We are only scratching the surface
+
+::left::
+
+<div class="ml-8">
+
+Kubernetes and its ecosystem do **far more** than fits in one workshop. A few things worth exploring next:
+
+<v-clicks>
+
+- **Autoscaling** that adds pods *and* whole machines under load<br>
+  <span class="opacity-60 text-[0.85rem]">Horizontal Pod Autoscaler · cluster autoscaler</span>
+
+- **Automatic HTTPS** for your domain, renewed for you<br>
+  <span class="opacity-60 text-[0.85rem]">Ingress controllers (nginx / Traefik) · cert-manager</span>
+
+- **Dashboards, metrics & alerts** out of the box<br>
+  <span class="opacity-60 text-[0.85rem]">Prometheus · Grafana · centralized logging (Loki / EFK)</span>
+
+- **Fine-grained access control & secret management**<br>
+  <span class="opacity-60 text-[0.85rem]">RBAC · NetworkPolicies · Vault / Sealed Secrets</span>
+
+</v-clicks>
+
+<div v-click class="mt-6 text-[1.05rem]">
+
+...and **hundreds more** projects in the
+<a href="https://landscape.cncf.io">CNCF landscape</a>.
+
+</div>
+
+</div>
+
+::right::
+
+<div class="h-full flex flex-col items-center justify-center">
+  <video
+    src="./assets/kubernetes.webm"
+    class="rounded-xl shadow-lg max-h-[400px] object-contain"
+    autoplay
+    muted
+    playsinline>
+  </video>
+</div>
+
+
+<style>
+.slidev-layout.two-cols-header {
+  grid-template-columns: 58% 42%;
+}
+</style>
+
+<!--
+The "you don't have to learn all of this today" slide. The honest framing: everything we showed is the 20% that gets a NOMAD Oasis running; these are the most common next steps people reach for in production. Don't read every term — land the four capabilities (scale, HTTPS, observability, GitOps) and gesture at the CNCF landscape as proof the ecosystem is huge. Good place to invite "which of these matters for your Oasis?" questions.
 -->
 
 ---
@@ -603,19 +591,90 @@ layout: statement
 hideInToc: true
 ---
 
-# ☕ Questions & a short break
+# Questions & 10-minute break
 
-### Part 2 next: the same chart, in the cloud
+<div class="h-full flex flex-col items-center justify-center gap-6">
+
+  <div style="text-align: left; width: 600px">
+
+  ### Part 2 next: the same chart, in the cloud. During the break you can already prepare: 
+
+  1. Start a free trial in Google Cloud: requires you to validate with a credit card, you will not be billed.
+  2. Install Google Cloud CLI
+  </div>
+</div>
 
 <!--
 Good moment to take questions on part 1 before we switch context to Google Cloud.
 -->
 
+
 ---
 layout: section
 ---
 
-# NOMAD in the cloud
+# Kubernetes in the cloud
+
+---
+layout: two-cols-header
+level: 2
+---
+
+# A Kubernetes server in the cloud
+
+::left:: 
+
+You rarely build a cluster by hand. Cloud providers run a **managed Kubernetes**: they operate the control plane, you just add worker nodes.
+
+Using **Google Kubernetes Engine (GKE) Autopilot** as the example:
+
+- Google runs *and* bills the control plane for you
+- **Autopilot** even manages the nodes — you just deploy
+- A cluster is ready in a few minutes
+
+The same idea exists on **AWS (EKS)**, **Azure (AKS)**, DigitalOcean, etc.
+
+::right::
+
+<div class="h-full flex flex-col items-center justify-center ml-8 gap-6">
+  <img src="https://www.vectorlogo.zone/logos/google_cloud/google_cloud-icon.svg" class="max-h-[210px]" />
+</div>
+
+<!--
+The mental shift: in the cloud you don't think about "servers" anymore, you think about a cluster you submit work to. We'll actually do this live in part 2.
+-->
+
+---
+level: 2
+---
+
+# Setup GKE access
+
+**What you need first**
+
+<v-clicks>
+
+1. A Google account + a **project** with billing enabled
+2. Enable the **Kubernetes Engine API**
+3. Install Google Cloud CLI:
+ - https://docs.cloud.google.com/sdk/docs/install-sdk
+
+3. Install the local tools:
+   - `gcloud` (Google Cloud CLI)
+   - `kubectl`
+   - `helm`
+
+</v-clicks>
+
+<div v-click class="mt-4 text-[0.9rem]">
+
+Other easy options: **DigitalOcean** (free control plane), or **minikube/k3s** for fully local. We will take a short break here so you can install these tools.
+
+</div>
+
+<!--
+Be transparent about cost: the cluster control plane can be free, but the moment you add nodes and a load balancer you spend money. The $300 trial is plenty for a workshop; the discipline is to `gcloud container clusters delete` afterwards.
+-->
 
 ---
 layout: two-cols-header
@@ -692,18 +751,6 @@ We'll run this live. The cluster takes a few minutes; while it provisions I'll s
 -->
 
 ---
-layout: statement
-hideInToc: true
----
-
-# 🔴 Live demo 2a
-## Create the cluster in the Google Cloud Console
-
-<!--
-Live: create the Autopilot cluster (console + gcloud), then `get-credentials` and `kubectl get nodes` to prove kubectl is wired up.
--->
-
----
 layout: two-cols-header
 level: 2
 ---
@@ -755,18 +802,6 @@ The honesty slide: there's no gke.yaml in the repo today, so I adapt the AWS one
 -->
 
 ---
-layout: statement
-hideInToc: true
----
-
-# 🔴 Live demo 2b
-## helm install on GKE
-
-<!--
-Live: helm install with the adapted values, then `kubectl get pods -n nomad-oasis -w` to watch the stack come up on the cloud cluster.
--->
-
----
 layout: two-cols-header
 level: 2
 ---
@@ -810,18 +845,6 @@ The payoff: the same NOMAD GUI you saw on the laptop, now served from a multi-no
 -->
 
 ---
-layout: statement
-hideInToc: true
----
-
-# 🔴 Live demo 2c
-## Open NOMAD in the browser & monitor it
-
-<!--
-Live: open the cloud GUI, then flip to the GKE console Workloads/Logs to monitor the live server. Then tear the cluster down (cost!).
--->
-
----
 layout: section
 ---
 
@@ -838,15 +861,13 @@ level: 2
 - **Docker Compose** = one host, one command — the right place to *start*.
 - **Kubernetes** = many nodes, self-healing, scaling — for production *at scale*.
 - **Helm** packages all of NOMAD into one installable chart: **`nomad/default`**.
-- The **same chart** runs locally (**minikube**) and in the cloud (**GKE**) — only the **values** change.
+- The **same chart** runs locally (**k3s**) and in the cloud (**GKE**) — only the **values** change.
 - Your distribution image carries your plugins; the chart values carry your infrastructure.
 - Day-to-day toolbox: **`kubectl`** to observe & debug, **`helm`** to deploy, update & roll back.
 
 </v-clicks>
 
 <div v-click class="mt-8 text-[1.05rem]">
-
-➡️ Now: ~45 min hands-on — reproduce this on your own laptop — then open debugging & Q&A.
 
 </div>
 
