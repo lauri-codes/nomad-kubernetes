@@ -25,7 +25,10 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          # Pinned to match the local npm (11.6.2) that generated the lockfile.
+          # 'lts/*' floats to a newer npm that re-resolves optional native deps
+          # (@emnapi/*) and fails `npm ci`. Bump deliberately, regenerating the lock.
+          node-version: '24.11.1'
 
       - name: Setup @antfu/ni
         run: npm i -g @antfu/ni
