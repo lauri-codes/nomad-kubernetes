@@ -36,11 +36,23 @@ level: 2
 
 # View slides on your laptop
 
-::left:: 
+::left::
 
-Please open the live version of these slides on your laptop by following this URL. This way you can follow the slides in your own pace + copy/paste commands.
+Open the live version of these slides on your own device — **scan the QR code** or type the short link.
+
+This way you can:
+
+- Follow along at your **own pace**
+- **Copy & paste** the commands directly
 
 ::right::
+
+<div class="h-full flex flex-col items-center justify-center gap-6">
+  <img src="./assets/qr.svg" class="w-80 rounded-lg shadow-md" />
+  <a href="https://tinyurl.com/3rj4xajc" class="text-3xl font-bold no-underline">
+    tinyurl.com/3rj4xajc
+  </a>
+</div>
 
 ---
 layout: section
