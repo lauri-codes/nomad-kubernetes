@@ -332,9 +332,10 @@ nomad-helm-charts/
 ```
 
 ```bash
-helm repo add nomad \
-  https://fairmat-nfdi.github.io/nomad-helm-charts
-helm repo update
+# Get the latest chart version from git
+git clone https://github.com/FAIRmat-NFDI/nomad-helm-charts.git
+cd nomad-helm-charts
+git checkout develop
 ```
 
 </div>
@@ -369,6 +370,19 @@ Requirements if you wish to do this on your laptop:
 2. Reasonably powerful laptop with storage to download all the images.
 
 ::right::
+<div class="h-full flex flex-col items-center justify-center ml-8 gap-6">
+  <img src="https://raw.githubusercontent.com/cncf/artwork/master/projects/k3s/icon/color/k3s-icon-color.svg" class="max-h-[200px] object-contain" />
+</div>
+
+<!--
+k3s is the "Docker Desktop" of Kubernetes: one binary, one command, a real cluster. Everything we show locally transfers 1:1 to the cloud cluster.
+-->
+
+---
+level: 2
+---
+
+# `k3s`
 
 Let's install everything using helper scripts in `nomad-helm-charts`:
 
@@ -385,13 +399,8 @@ git checkout develop
 # - Adds DNS entry to route traffic
 ./helpers/k3s-setup.sh
 ```
-<div class="h-full flex flex-col items-center justify-center ml-8 gap-6">
-  <img src="https://raw.githubusercontent.com/kubernetes/minikube/master/images/logo/logo.png" class="max-h-[90px] object-contain" />
-</div>
 
-<!--
-k3s is the "Docker Desktop" of Kubernetes: one binary, one command, a real cluster. Everything we show locally transfers 1:1 to the cloud cluster.
--->
+Once tools are installed and the cluster is booting up, we can actually start monitoring it with Kubernetes tools.
 
 ---
 level: 2
@@ -399,7 +408,7 @@ level: 2
 
 # Essential kubectl
 
-`kubectl` is your window into the cluster. Add `-n nomad-oasis` to scope to the namespace.
+`kubectl` is your window into the cluster. This tool can be installed separately, but `k3s` comes with a built-in one.
 
 <div class="flex gap-10 text-left">
 
@@ -408,23 +417,23 @@ level: 2
 **Inspect & observe**
 
 ```bash
-kubectl get pods -n nomad-oasis    # List all pods in a namespace 
-kubectl get pods -A                # All namespaces
-kubectl get nodes -o wide          # The machines
-kubectl get svc,deploy             # Services / deployments
-kubectl describe pod <pod>         # Status + events
-kubectl get events --sort-by=.lastTimestamp  # What just happened
-kubectl top pods                   # CPU / memory usage
+k3s kubectl get pods -n nomad-oasis    # List all pods in a namespace 
+k3s kubectl get pods -A                # All namespaces
+k3s kubectl get nodes -o wide          # The machines
+k3s kubectl get svc,deploy             # Services / deployments
+k3s kubectl describe pod <pod>         # Status + events
+k3s kubectl get events --sort-by=.lastTimestamp  # What just happened
+k3s kubectl top pods                   # CPU / memory usage
 ```
 
 **Debug & access**
 
 ```bash
-kubectl logs -f <pod>                  # Stream logs
-kubectl logs <pod> --previous          # Logs of a crash
-kubectl exec -it <pod> -- /bin/bash    # Shell in
-kubectl delete pod <pod>               # Force a restart
-kubectl port-forward svc/<svc> 8000:80 # Reach it locally
+k3s kubectl logs -f <pod>                  # Stream logs
+k3s kubectl logs <pod> --previous          # Logs of a crash
+k3s kubectl exec -it <pod> -- /bin/bash    # Shell in
+k3s kubectl delete pod <pod>               # Force a restart
+k3s kubectl port-forward svc/<svc> 8000:80 # Reach it locally
 ```
 
 </div>
