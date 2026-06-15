@@ -151,8 +151,6 @@ level: 2
 | **Scaling** | Manual (`--scale`) | Autoscaling (HPA), across nodes |
 | **Self-healing** | None | Restarts & reschedules failed pods |
 | **Updates** | Manual restart | Rolling updates + one-command rollback |
-| **Load balancing** | Single host only | Services + Ingress across the cluster |
-| **Configuration** | A compose file | Declarative manifests (desired state) |
 | **Learning curve** | Gentle | Steep |
 | **Overhead** | Minimal | Control plane + per-node agents |
 | **Best for** | Dev, single server | Production, HA, many concurrent users |
@@ -239,7 +237,7 @@ A **cluster** = a control plane that gives orders + worker nodes that run your c
 ::right::
 
 <div class="h-full flex flex-col items-center justify-center ml-4">
-  <img src="https://kubernetes.io/images/docs/components-of-kubernetes.svg" class="max-w-full rounded-lg" />
+  <img src="./assets/kubernetes.svg" class="max-w-full rounded-lg" />
   <div class="text-[0.8rem] mt-4 self-start">
 
   Key objects: **Pod** (one+ containers) · **Node** (a machine) · **Service** (stable address) · **Deployment** (keeps N replicas running)
@@ -279,15 +277,8 @@ That's why FAIRmat ships a **Helm chart** instead of a pile of raw YAML: one com
 
 ::right::
 
-<div class="h-full flex flex-col items-center justify-center ml-8 gap-8">
+<div class="h-full flex flex-col items-center justify-center ml-8 gap-8 -mt-10">
   <img src="https://raw.githubusercontent.com/cncf/artwork/master/projects/helm/icon/color/helm-icon-color.svg" class="max-h-[220px]" />
-
-```bash
-# Install the whole NOMAD stack
-helm install nomad-oasis nomad/default \
-  -f my-values.yaml
-```
-
 </div>
 
 <!--
@@ -303,7 +294,7 @@ level: 2
 
 ::left:: 
 
-Repo: **`FAIRmat-NFDI/nomad-helm-charts`**
+Repo: [**`FAIRmat-NFDI/nomad-helm-charts`**](https://github.com/FAIRmat-NFDI/nomad-helm-charts)
 
 - One chart: **`default`** — the full Oasis stack
 - Bundles the dependencies as **subcharts** (app, worker, NORTH, MongoDB, Elasticsearch, RabbitMQ, …)
@@ -623,8 +614,8 @@ hideInToc: true
 
   ### Part 2 next: the same chart, in the cloud. During the break you can already prepare: 
 
-  1. Start a free trial in Google Cloud: requires you to validate with a credit card, you will not be billed.
-  2. Install Google Cloud CLI
+  Start a free trial in Google Cloud: requires you to validate with a credit card, you will not be billed.
+
   </div>
 </div>
 
@@ -640,29 +631,20 @@ layout: section
 # Kubernetes in the cloud
 
 ---
-layout: two-cols-header
 level: 2
 ---
 
 # A Kubernetes server in the cloud
 
-::left:: 
-
-You rarely build a cluster by hand. Cloud providers run a **managed Kubernetes**: they operate the control plane, you just add worker nodes.
+You rarely build a cluster by hand. Cloud providers run a **managed Kubernetes**. With these you can stop worrying about the resource provisioning, and just interact with the Kubernetes cluster.
 
 Using **Google Kubernetes Engine (GKE) Autopilot** as the example:
 
-- Google runs *and* bills the control plane for you
+- Google runs the control plane for you
 - **Autopilot** even manages the nodes — you just deploy
 - A cluster is ready in a few minutes
 
 The same idea exists on **AWS (EKS)**, **Azure (AKS)**, DigitalOcean, etc.
-
-::right::
-
-<div class="h-full flex flex-col items-center justify-center ml-8 gap-6">
-  <img src="https://www.vectorlogo.zone/logos/google_cloud/google_cloud-icon.svg" class="max-h-[210px]" />
-</div>
 
 <!--
 The mental shift: in the cloud you don't think about "servers" anymore, you think about a cluster you submit work to. We'll actually do this live in part 2.
@@ -679,47 +661,31 @@ level: 2
 
 We will now deploy NOMAD using GKE.
 
-**Google Cloud**
-
 - New accounts get **$300 in credits / 90 days**
 - GKE's monthly **free tier** covers one Autopilot/zonal cluster's management fee
 - Compute, load balancers and storage will eat away your free credits — delete the cluster when you're done!
 
-<!--
-Be transparent about cost: the cluster control plane can be free, but the moment you add nodes and a load balancer you spend money. The $300 trial is plenty for a workshop; the discipline is to `gcloud container clusters delete` afterwards.
--->
-
----
-level: 2
----
-
-# Setup GKE access
-
-Pre-requisites:
+To start, you will need the following
 - Google account
-- Google Cloud free trial started
-- One Google Cloud project active
+- Start a Google Cloud free trial
+- Make sure you have one Google Cloud project active
 
-We will do most things through command line tools. This makes everything easier to follow and reproduce. In principle you can do all of this also through the Google Cloud Console if you can't install these tools on your laptop.
+We will wait a while for everyone interested to set this up.
 
-<v-clicks>
+::right::
 
-1. Install Google Cloud CLI: https://docs.cloud.google.com/sdk/docs/install-sdk
-
-2. Install `kubectl` (the `k3s kubectl` is not enough): https://kubernetes.io/docs/tasks/tools/
-
-3. Install Helm (you already have it installed if you ran the k3s cluster): https://helm.sh/docs/intro/install/
-
-</v-clicks>
-
-<div v-click class="mt-4 text-[0.9rem]">
-
+<div class="flex flex-col items-center justify-center ml-8 mt-20">
+  <img src="https://www.vectorlogo.zone/logos/google_cloud/google_cloud-icon.svg" class="w[200px] object-contain" />
 </div>
 
 <!--
-The cluster control plane can be free, but the moment you add nodes and a load balancer you spend money. The $300 trial is plenty for a workshop; the discipline is to `gcloud container clusters delete` afterwards.
 -->
 
+<style>
+.slidev-layout.two-cols-header {
+  grid-template-columns: 60% 40%;
+}
+</style>
 
 ---
 level: 2
@@ -727,28 +693,30 @@ level: 2
 
 # Create a GKE Autopilot cluster
 
-```bash
-# Authenticate and select your project
-gcloud auth login
-gcloud config set project <PROJECT_ID>
+Login to Google Cloud (https://console.cloud.google.com/), and start the **cloud shell** (button in the top-right). Run the following command there:
 
-# Enable the Kubernetes Engine API and file services (once per project)
+```bash
+# Enable the Kubernetes Engine API and file services
 gcloud services enable container.googleapis.com
 gcloud services enable file.googleapis.com
 
 # Create an Autopilot cluster — Google runs the control plane & nodes
+# This will take a while
 gcloud container clusters create-auto nomad-oasis --region=europe-west1
-
-# Install plugin to authenticate with cluster
-sudo apt-get install google-cloud-cli-gke-gcloud-auth-plugin
-
-# Check connection by viewing all pods
-kubectl get pods -A
 ```
 
-<!--
-We'll run this live. The cluster takes a few minutes; while it provisions I'll show the same thing in the web console so people who prefer clicking can follow along.
--->
+Booting up the cluster will take some minutes.
+While the cluster is booting we can prepare the following (open a new shell tab):
+
+```bash
+# Reserve a static IP and read its address
+gcloud compute addresses create nomad-oasis-ip --global
+
+# Get the NOMAD Helm charts
+git clone https://github.com/FAIRmat-NFDI/nomad-helm-charts.git
+cd nomad-helm-charts
+git checkout develop 
+```
 
 ---
 level: 2
@@ -756,72 +724,77 @@ level: 2
 
 # Deploy the NOMAD Helm chart on GKE
 
-::left:: 
-
-Exactly the same chart as on k3s — only the **values** change.
+Exactly the same chart as on k3s — only the **values** change. Run all of this in the cloud shell:
 
 ```bash
-# Reserve a static IP and read its address
-gcloud compute addresses create nomad-oasis-ip --global
+# Check if the cluster is running. If you see a list of pods in PENDING, then everything
+# is OK.
+kubectl get pods -A
+
+# Get the reserved IP address
 LB_IP=$(gcloud compute addresses describe \
   nomad-oasis-ip --global --format='value(address)')
 
-# Get chart from your local clone of the git repo
-git clone https://github.com/FAIRmat-NFDI/nomad-helm-charts.git
-cd nomad-helm-charts
-git checkout develop 
-
-# Install. We will use the nip.io service that provides a wildcard DNS for our server
-helm install nomad-oasis ./charts/default \
-  -f ./charts/default/custom-values/gke.yaml --timeout 15m \
-  --set nomad.config.services.api_host=$LB_IP
+# Make sure you are in the `nomad-helm-charts` folder. We use the nip.io service that
+# provides a wildcard DNS for our server
+cd charts/default
+helm dependency update
+helm install nomad-oasis . \
+  -f ./custom-values/gke.yaml --timeout 15m \
+  --set nomad.config.services.api_host=${LB_IP}.nip.io
 ```
+
+This will start the installation, which will take around 10 minutes to complete. While this is going on, we can practice our kubectl + helm skills.
 
 <!--
 -->
 
 ---
-layout: two-cols-header
 level: 2
 ---
 
 # View & monitor the running server
 
-::left:: 
-
-**Find the entry point, open the GUI**
-
 ```bash
-kubectl get ingress -n nomad-oasis
-kubectl get svc -n nomad-oasis -w   # wait for EXTERNAL-IP
-```
-
-Then browse to **http://&lt;EXTERNAL-IP&gt;/nomad-oasis/gui/**
-
-::right::
-
-<div class="ml-8">
-
-**Keep an eye on it**
-
-```bash
-kubectl get pods -n nomad-oasis
+kubectl get pods -n default    # See status of pods
+kubectl get nodes              # See the nodes. GKE will automatically add a second node for us.
+kubectl describe pod <pod-id>  # Check kubernetes lifecycle events for a pod
 kubectl logs -f deploy/nomad-oasis-app \
   -n nomad-oasis
-kubectl top pods -n nomad-oasis
+kubectl top pods -n default    # See pod resource usage
+helm list                      # List deployments
+helm status nomad-oasis        # What's deployed
+helm get values nomad-oasis    # Effective config
 ```
 
-Plus the **GKE Console**:
+GKE assigns automatically a load-balancer in front of your cluster. It will take some time to bootup, you can check status like this:
+```bash
 
-- *Workloads* — health of every deployment
-- *Logs* — searchable, centralised
-- *Cloud Monitoring* — CPU/memory dashboards
+kubectl get ingress -n default # Once address column is populated, your site should be visible under that IP
+```
 
-</div>
+Once everything is up and running, you should be able to visit the new deployment here:
+
+```
+http://<EXTERNAL-IP>.nip.io/nomad-oasis/gui/
+```
 
 <!--
 The payoff: the same NOMAD GUI you saw on the laptop, now served from a multi-node cloud cluster. Show the console Workloads view — for many admins the graphical health view is the "aha" moment versus tailing logs by hand.
 -->
+
+---
+level: 2
+---
+
+# Shutdown GKE
+
+When finished, let's delete the cluster and release resources:
+
+```bash
+# Delete the kubernetes cluster
+gcloud container clusters delete nomad-oasis --region europe-west1
+```
 
 ---
 layout: section
@@ -882,14 +855,13 @@ hideInToc: true
       <li>GKE: <a href="https://cloud.google.com/kubernetes-engine/docs">cloud.google.com/kubernetes-engine</a></li>
     </ul>
   </div>
-  <div class="flex flex-col items-center gap-8 mt-8 ml-8">
-    <img src="https://nomad-lab.eu/nomad-lab/assets/nomad.svg" class="max-h-[90px]" />
-    <img src="https://raw.githubusercontent.com/cncf/artwork/master/projects/kubernetes/icon/color/kubernetes-icon-color.svg" class="max-h-[110px]" />
-    <h2>Questions & hands-on?</h2>
-  </div>
 </div>
 
 ::right::
+<div class="h-full flex flex-col items-center justify-center gap-8 ml-8 -mt-10">
+  <h1>Thanks!</h1>
+  <h1>Questions?</h1>
+</div>
 
 <!--
 Leave this up during the hands-on and Q&A block. All links are clickable in the rendered slides.
