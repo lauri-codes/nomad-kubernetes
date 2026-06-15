@@ -806,7 +806,7 @@ helm install nomad-oasis . \
   --set nomad.config.services.api_host=${LB_IP}.nip.io
 ```
 
-This will start the installation, which will take around 10 minutes to complete. While this is going on, we can practice our kubectl + helm skills.
+This will start the installation, which will take around 10 minutes to complete. While this is going on, we can practice our `kubectl` + `helm` skills.
 
 <!--
 -->
@@ -820,7 +820,7 @@ level: 2
 ```bash
 kubectl get pods -n default    # See status of pods
 kubectl get nodes              # See the nodes. GKE will automatically add a second node for us.
-kubectl describe pod <pod-id>  # Check kubernetes lifecycle events for a pod
+kubectl describe pod <pod-id>  # Check a detailed description for the pod
 kubectl logs -f deploy/nomad-oasis-app \
   -n nomad-oasis
 kubectl top pods -n default    # See pod resource usage
@@ -830,8 +830,8 @@ helm get values nomad-oasis    # Effective config
 ```
 
 GKE assigns automatically a load-balancer in front of your cluster. It will take some time to bootup, you can check status like this:
-```bash
 
+```bash
 kubectl get ingress -n default # Once address column is populated, your site should be visible under that IP
 ```
 
