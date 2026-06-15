@@ -297,7 +297,7 @@ level: 2
 Repo: [**`FAIRmat-NFDI/nomad-helm-charts`**](https://github.com/FAIRmat-NFDI/nomad-helm-charts)
 
 - One chart: **`default`** — the full Oasis stack
-- Bundles the dependencies as **subcharts** (app, worker, NORTH, MongoDB, Elasticsearch, RabbitMQ, …)
+- Bundles the dependencies as **subcharts** (app, worker, NORTH, MongoDB, Elasticsearch, …)
 - Ready-made **`custom-values/`** for each target: `k3s.yaml`, `minikube.yaml`, `kind.yaml`, `aws.yaml`, `gke.yaml`
 - **`helpers/`** scripts that bootstrap a local cluster for you
 
@@ -314,6 +314,8 @@ nomad-helm-charts/
 │       └── custom-values/
 │           ├── k3s.yaml
 │           ├── kind.yaml
+│           ├── minikube.yaml
+│           └── gke.yaml
 │           └── aws.yaml
 └── helpers/
     ├── k3s-setup.sh
@@ -370,10 +372,13 @@ k3s is the "Docker Desktop" of Kubernetes: one binary, one command, a real clust
 -->
 
 ---
+layout: two-cols-header
 level: 2
 ---
 
 # `k3s`
+
+::left::
 
 Let's install everything using helper scripts in `nomad-helm-charts`:
 
@@ -392,6 +397,28 @@ git checkout develop
 ```
 
 Once tools are installed and the cluster is booting up, we can actually start monitoring it with Kubernetes tools.
+
+
+::right::
+
+<div class="border-l-4 border-orange-500 bg-orange-500/10 rounded-r px-3 py-1 my-3 text-[0.9rem] ml-6">
+
+⚠️ **If you get an error with:**
+
+```sh
+Waiting for the k3s node to be Ready...
+    error: no matching resources found
+```
+
+just re-run the script.
+
+</div>
+
+<style>
+.slidev-layout.two-cols-header {
+  grid-template-columns: 55% 45%; /* Adjust to your desired proportions */
+}
+</style>
 
 ---
 level: 2
@@ -413,18 +440,19 @@ k3s kubectl get pods -A                # All namespaces
 k3s kubectl get nodes -o wide          # The machines
 k3s kubectl get svc,deploy             # Services / deployments
 k3s kubectl describe pod <pod>         # Status + events
-k3s kubectl get events --sort-by=.lastTimestamp  # What just happened
-k3s kubectl top pods                   # CPU / memory usage
+k3s kubectl get events --sort-by=.lastTimestamp # What happened
+k3s kubectl top pods -n nomad-oasis    # CPU / memory usage
 ```
 
 **Debug & access**
 
 ```bash
-k3s kubectl logs -f <pod>                  # Stream logs
-k3s kubectl logs <pod> --previous          # Logs of a crash
-k3s kubectl exec -it <pod> -- /bin/bash    # Shell in
-k3s kubectl delete pod <pod>               # Force a restart
-k3s kubectl port-forward svc/<svc> 8000:80 # Reach it locally
+k3s kubectl logs -f <pod> -n nomad-oasis         # Stream logs
+k3s kubectl logs <pod> -n nomad-oasis --previous # Logs of a crash
+k3s kubectl exec -it <pod> -n \
+  nomad-oasis -- /bin/bash                       # Shell in
+k3s kubectl delete pod <pod> -n nomad-oasis      # Force a restart
+k3s kubectl port-forward svc/<svc> 8000:80       # Reach it locally
 ```
 
 </div>
@@ -519,6 +547,40 @@ helm list
 helm status nomad-oasis
 k3s kubectl get pods -n nomad-oasis
 -->
+
+---
+layout: two-cols-header
+level: 2
+---
+
+# Opening NOMAD
+
+The installation is running fine if all pods are either **running** or **completed**, an example:
+
+```
+NAME                                             READY   STATUS      RESTARTS      AGE
+elasticsearch-master-0                           1/1     Running     2 (95s ago)   45h
+nomad-oasis-app-78d4c478b-x5m5c                  1/1     Running     6 (39s ago)   45h
+nomad-oasis-jupyterhub-hub-57b974b949-gsfvc      1/1     Running     0             19s
+nomad-oasis-jupyterhub-proxy-bf55cd867-59c6m     1/1     Running     0             19s
+nomad-oasis-mongodb-55d56f48c-44nd4              1/1     Running     2 (95s ago)   45h
+nomad-oasis-postgresql-0                         1/1     Running     2 (95s ago)   45h
+nomad-oasis-proxy-64d4cbfd85-xvn65               0/1     Running     6 (95s ago)   45h
+nomad-oasis-proxy-7bd5565cbb-6z4gc               0/1     Running     0             20s
+nomad-oasis-temporal-admintools-fd6998f8-gr8qx   1/1     Running     2 (95s ago)   45h
+nomad-oasis-temporal-frontend-686df77456-pgt4f   1/1     Running     9 (79s ago)   45h
+nomad-oasis-temporal-history-8b9d9bc58-jwfwg     1/1     Running     9 (79s ago)   45h
+nomad-oasis-temporal-matching-6d7ffb4666-pnv8v   1/1     Running     9 (79s ago)   45h
+nomad-oasis-temporal-schema-2-7d7bn              0/1     Completed   0             20s
+nomad-oasis-temporal-web-5c4f6dc6df-bqndr        1/1     Running     2 (95s ago)   45h
+nomad-oasis-worker-66f98cfb85-xjqs8              1/1     Running     2 (95s ago)   45h
+```
+
+After this you can visit the installation here:
+
+```sh
+http://nomad-oasis.local/nomad-oasis/gui/
+```
 
 ---
 layout: two-cols-header
@@ -795,6 +857,8 @@ When finished, let's delete the cluster and release resources:
 # Delete the kubernetes cluster
 gcloud container clusters delete nomad-oasis --region europe-west1
 ```
+
+The created persistent disks can be deleted manually from the Google Cloud interface: **Compute Engine -> Disks**
 
 ---
 layout: section
