@@ -321,10 +321,11 @@ nomad-helm-charts/
 │       ├── Chart.yaml
 │       ├── values.yaml
 │       └── custom-values/
-│           ├── minikube.yaml
+│           ├── k3s.yaml
 │           ├── kind.yaml
 │           └── aws.yaml
 └── helpers/
+    ├── k3s-setup.sh
     ├── minikube-setup.sh
     ├── kind-setup.sh
     └── check-status.sh
@@ -379,7 +380,7 @@ cd nomad-helm-charts
 git checkout develop
 
 # Will ask for sudo password:
-# - Will install k3s+helm
+# - Will install k3s + helm
 # - Creates data folders in /app
 # - Adds DNS entry to route traffic
 ./helpers/k3s-setup.sh
@@ -535,6 +536,8 @@ sudo /usr/local/bin/k3s-uninstall.sh
 # Remove resources and stop k3s from launching
 sudo /usr/local/bin/k3s-killall.sh
 sudo systemctl disable k3s
+
+# Remove the created data folders at `/app` created by the `k3s-setup.sh`
 ```
 
 ---
@@ -657,82 +660,57 @@ The mental shift: in the cloud you don't think about "servers" anymore, you thin
 -->
 
 ---
-level: 2
----
-
-# Setup GKE access
-
-**What you need first**
-
-<v-clicks>
-
-1. A Google account + a **project** with billing enabled
-2. Enable the **Kubernetes Engine API**
-3. Install Google Cloud CLI:
- - https://docs.cloud.google.com/sdk/docs/install-sdk
-
-3. Install the local tools:
-   - `gcloud` (Google Cloud CLI)
-   - `kubectl`
-   - `helm`
-
-</v-clicks>
-
-<div v-click class="mt-4 text-[0.9rem]">
-
-Other easy options: **DigitalOcean** (free control plane), or **minikube/k3s** for fully local. We will take a short break here so you can install these tools.
-
-</div>
-
-<!--
-Be transparent about cost: the cluster control plane can be free, but the moment you add nodes and a load balancer you spend money. The $300 trial is plenty for a workshop; the discipline is to `gcloud container clusters delete` afterwards.
--->
-
----
 layout: two-cols-header
 level: 2
 ---
 
-# A free Kubernetes cluster for testing
+# Google Kubernetes Engine (GKE)
 
 ::left:: 
 
-You can try all of this on a real cloud cluster for **little or no money**.
+We will now deploy NOMAD using GKE.
 
 **Google Cloud**
 
 - New accounts get **$300 in credits / 90 days**
 - GKE's monthly **free tier** covers one Autopilot/zonal cluster's management fee
-- ⚠️ Compute, load balancers and storage are **still billed** — delete the cluster when you're done!
+- Compute, load balancers and storage will eat away your free credits — delete the cluster when you're done!
 
-::right::
+<!--
+Be transparent about cost: the cluster control plane can be free, but the moment you add nodes and a load balancer you spend money. The $300 trial is plenty for a workshop; the discipline is to `gcloud container clusters delete` afterwards.
+-->
 
-<div class="ml-8">
+---
+level: 2
+---
 
-**What you need first**
+# Setup GKE access
+
+Pre-requisites:
+- Google account
+- Google Cloud free trial started
+- One Google Cloud project active
+
+We will do most things through command line tools. This makes everything easier to follow and reproduce. In principle you can do all of this also through the Google Cloud Console if you can't install these tools on your laptop.
 
 <v-clicks>
 
-1. A Google account + a **project** with billing enabled
-2. Enable the **Kubernetes Engine API**
-3. Install the local tools:
-   - `gcloud` (Google Cloud CLI)
-   - `kubectl`
-   - `helm`
+1. Install Google Cloud CLI: https://docs.cloud.google.com/sdk/docs/install-sdk
+
+2. Install `kubectl` (the `k3s kubectl` is not enough): https://kubernetes.io/docs/tasks/tools/
+
+3. Install Helm (you already have it installed if you ran the k3s cluster): https://helm.sh/docs/intro/install/
 
 </v-clicks>
 
 <div v-click class="mt-4 text-[0.9rem]">
 
-Other easy options: **DigitalOcean** (free control plane), or **minikube/k3s** for fully local.
-
-</div>
-
 </div>
 
 <!--
-Be transparent about cost: the cluster control plane can be free, but the moment you add nodes and a load balancer you spend money. The $300 trial is plenty for a workshop; the discipline is to `gcloud container clusters delete` afterwards.
+The cluster control plane can be free, but the moment you add nodes and a load balancer you spend money. The $300 trial is plenty for a workshop; the discipline is to `gcloud container clusters delete` afterwards.
 -->
+
 
 ---
 level: 2
@@ -741,76 +719,56 @@ level: 2
 # Create a GKE Autopilot cluster
 
 ```bash
-# 1. Authenticate and select your project
+# Authenticate and select your project
 gcloud auth login
 gcloud config set project <PROJECT_ID>
 
-# 2. Enable the Kubernetes Engine API (once per project)
+# Enable the Kubernetes Engine API and file services (once per project)
 gcloud services enable container.googleapis.com
+gcloud services enable file.googleapis.com
 
-# 3. Create an Autopilot cluster — Google runs the control plane & nodes
+# Create an Autopilot cluster — Google runs the control plane & nodes
 gcloud container clusters create-auto nomad-oasis --region=europe-west1
 
-# 4. Point kubectl at the new cluster
-gcloud container clusters get-credentials nomad-oasis --region europe-west1
-kubectl get nodes
-```
+# Install plugin to authenticate with cluster
+sudo apt-get install google-cloud-cli-gke-gcloud-auth-plugin
 
-You can do all of this in the **Cloud Console UI** too — *Kubernetes Engine → Create → Autopilot*.
+# Check connection by viewing all pods
+kubectl get pods -A
+```
 
 <!--
 We'll run this live. The cluster takes a few minutes; while it provisions I'll show the same thing in the web console so people who prefer clicking can follow along.
 -->
 
 ---
-layout: two-cols-header
 level: 2
 ---
 
-# Deploy the Helm chart on GKE
+# Deploy the NOMAD Helm chart on GKE
 
 ::left:: 
 
-Exactly the same chart as on minikube — only the **values** change.
+Exactly the same chart as on k3s — only the **values** change.
 
 ```bash
-helm repo add nomad \
-  https://fairmat-nfdi.github.io/nomad-helm-charts
-helm repo update
+# Reserve a static IP and read its address
+gcloud compute addresses create nomad-oasis-ip --global
+LB_IP=$(gcloud compute addresses describe \
+  nomad-oasis-ip --global --format='value(address)')
 
-helm install nomad-oasis nomad/default \
-  -f gke-values.yaml --timeout 15m
+# Get chart from your local clone of the git repo
+git clone https://github.com/FAIRmat-NFDI/nomad-helm-charts.git
+cd nomad-helm-charts
+git checkout develop 
+
+# Install. We will use the nip.io service that provides a wildcard DNS for our server
+helm install nomad-oasis ./charts/default \
+  -f ./charts/default/custom-values/gke.yaml --timeout 15m \
+  --set nomad.config.services.api_host=$LB_IP
 ```
-
-⚠️ A GKE values file isn't shipped yet — we start from **`custom-values/aws.yaml`** and adapt it live.
-
-::right::
-
-<div class="ml-8">
-
-```yaml
-# gke-values.yaml (adapted from aws.yaml)
-nomad:
-  config:
-    services:
-      api_host: <LB_IP_OR_DOMAIN>
-      api_base_path: /nomad-oasis
-
-ingress:
-  enabled: true
-
-# cloud specifics:
-#  • Service type LoadBalancer / managed ingress
-#  • a cloud StorageClass for volumes
-#    (GKE: standard-rwo)
-persistence:
-  storageClass: standard-rwo
-```
-
-</div>
 
 <!--
-The honesty slide: there's no gke.yaml in the repo today, so I adapt the AWS one. The two things that always differ per cloud are (1) how external traffic gets in (LoadBalancer / ingress class) and (2) the StorageClass for persistent volumes.
 -->
 
 ---
@@ -910,7 +868,7 @@ hideInToc: true
     </ul>
     <p><strong>Kubernetes toolbox</strong></p>
     <ul>
-      <li>minikube: <a href="https://minikube.sigs.k8s.io/docs/start/">minikube.sigs.k8s.io</a></li>
+      <li>k3s: <a href="https://k3s.io/">k3s.io/</a></li>
       <li>Helm: <a href="https://helm.sh/docs/">helm.sh/docs</a></li>
       <li>GKE: <a href="https://cloud.google.com/kubernetes-engine/docs">cloud.google.com/kubernetes-engine</a></li>
     </ul>
