@@ -2,6 +2,7 @@
 theme: ./theme
 class: text-center
 hideInToc: true
+background: ./assets/fairmat_slide_background.jpg
 ---
 
 # Deploying NOMAD Oasis with Kubernetes
@@ -21,13 +22,6 @@ Welcome. This is a hands-on workshop: ~45 min of slides, ~45 min of live demoing
 
 Goal: by the end you should understand *why* and *how* you would move a NOMAD Oasis from Docker Compose to Kubernetes, and be able to reproduce a deployment yourself — locally on your laptop and in the cloud.
 -->
-
----
-hideInToc: true
----
-
-# Overview
-<Toc text-2xl minDepth="1" maxDepth="1" />
 
 ---
 layout: two-cols-header
@@ -53,6 +47,14 @@ This way you can:
     tinyurl.com/3rj4xajc
   </a>
 </div>
+
+---
+hideInToc: true
+---
+
+# Overview
+<Toc text-2xl minDepth="1" maxDepth="1" />
+
 
 ---
 layout: section
@@ -298,8 +300,9 @@ Repo: [**`FAIRmat-NFDI/nomad-helm-charts`**](https://github.com/FAIRmat-NFDI/nom
 
 - One chart: **`default`** — the full Oasis stack
 - Bundles the dependencies as **subcharts** (app, worker, NORTH, MongoDB, Elasticsearch, …)
-- Ready-made **`custom-values/`** for each target: `k3s.yaml`, `minikube.yaml`, `kind.yaml`, `aws.yaml`, `gke.yaml`
 - **`helpers/`** scripts that bootstrap a local cluster for you
+- Ready-made **`custom-values/`** for each target: `k3s.yaml`, `minikube.yaml`, `kind.yaml`, `aws.yaml`, `gke.yaml`
+- **Your `nomad.yaml` can be provided as part of the values**
 
 ::right::
 
@@ -600,6 +603,7 @@ sudo /usr/local/bin/k3s-killall.sh
 sudo systemctl disable k3s
 
 # Remove the created data folders at `/app` created by the `k3s-setup.sh`
+# Remove the `nomad-oasis` record from `/etc/hosts`
 ```
 
 ---
